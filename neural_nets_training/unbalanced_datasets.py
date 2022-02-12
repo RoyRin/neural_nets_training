@@ -3,7 +3,7 @@ import numpy as np
 import torch
 from torch.utils.data import Subset
 
-from neural_nets_memorization import params
+from neural_nets_training import params
 
 MAX_PHYSICAL_BATCH_SIZE = 128
 

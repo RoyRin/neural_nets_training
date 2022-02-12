@@ -7,9 +7,9 @@ from torch.utils.tensorboard import SummaryWriter
 from opacus.utils.batch_memory_manager import BatchMemoryManager
 from opacus.validators import ModuleValidator
 
-from neural_nets_memorization import privacy
-from neural_nets_memorization import utils
-from neural_nets_memorization import params
+from neural_nets_training import privacy
+from neural_nets_training import utils
+from neural_nets_training import params
 
 MAX_PHYSICAL_BATCH_SIZE = 128
 NO_DP_FLAG = -9999

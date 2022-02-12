@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from neural_nets_memorization import params
+from neural_nets_training import params
 import toolz
 import numpy as np
 

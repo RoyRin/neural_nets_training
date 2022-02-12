@@ -4,7 +4,7 @@ from torch.utils.data import Subset
 import torchvision
 from torchvision import transforms
 
-from neural_nets_memorization import params
+from neural_nets_training import params
 
 
 def load_dataloader(dataset, batch_size=params.batch_size):

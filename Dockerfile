@@ -16,4 +16,3 @@ RUN  /app/code/standard/install_dependencies.sh \
 RUN python3 -m pip install /app/code/wheels/*whl
 
 ENTRYPOINT ["/app/code/standard/entrypoint.sh"]
-# CMD ["python3", "-m", "code.memorization_cli", "run-single-memorization-estimation"]

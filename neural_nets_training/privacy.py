@@ -7,7 +7,7 @@ from opacus.utils.batch_memory_manager import BatchMemoryManager
 from opacus.grad_sample import GradSampleModule
 #https://opacus.ai/tutorials/guide_to_grad_sampler
 
-from neural_nets_memorization.utils import get_new_optimizer
+from neural_nets_training.utils import get_new_optimizer
 
 privacy_data = namedtuple("privacy_data",
                           ["privacy_engine", "epsilon", "delta"])
