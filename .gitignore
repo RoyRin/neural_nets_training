@@ -1,0 +1,18 @@
+gcp
+.venv
+data/
+secrets/
+assets/
+**/__pycache__
+
+# Poetry
+dist/
+
+# scripts
+miscellaneous/
+ssh_scripts/
+wheels/
+configs/
+**/data/
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
