@@ -20,7 +20,6 @@ def conv_block(in_channels, out_channels, pool=False):
 TODO:
 1. make it possible to use different models on different datasets
 2. recreate this fast resnet 9    # https://dawn.cs.stanford.edu/benchmark/CIFAR10/train.html for CIFAR
-
 """
 
 
@@ -122,27 +121,15 @@ def parameters_per_model(model):
     return sum([np.prod(i.shape) for i in model.parameters()])
 
 
-def model_param_counts():
-    list_of_models = [
-        FCN(num_classes=10),
-        CNN(num_classes=10),
-        ResNet9(in_channels=3, num_classes=10)
-    ]
-    for i, mod in enumerate(list_of_models):
-        print(f"Mod {i} : {parameters_per_model(mod)}")
-
-    #Mod 0 : 397510
-    #Mod 1 : 1199882
-    #Mod 2 : 6575370
-
-
 def CNN_model_factory(*, num_classes=10, device=params.get_default_device()):
+    """Helper, returns a CNN model"""
     model = CNN(num_classes=num_classes)
     model.to(device)
     return model
 
 
 def FCN_model_factory(*, num_classes=10, device=params.get_default_device()):
+    """Helper, returns a FCN model"""
     model = FCN(num_classes=num_classes)
     model.to(device)
     return model
@@ -152,6 +139,7 @@ def Resnet9_model_factory(*,
                           in_channels=3,
                           num_classes=10,
                           device=params.get_default_device()):
+    """Helper, returns a ResNet9 model"""
     model = ResNet9(in_channels=in_channels, num_classes=num_classes)
     model.to(device)
     return model

@@ -1,6 +1,6 @@
 #!/bin/bash
-IMAGE_NAME="neural_networks_memorization"
-CONTAINER_NAME="neural_networks_memorization_container"
+IMAGE_NAME="neural_networks_training"
+CONTAINER_NAME="neural_networks_training_container"
 WSDIR="${1:-./${CONTAINER_NAME}-ws}"
 BUILD_ID=${2:-'latest'}
 
