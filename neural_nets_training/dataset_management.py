@@ -2,7 +2,6 @@ import numpy as np
 import torch
 from torch.utils.data import Subset
 import torchvision
-from torchvision import transforms
 
 from neural_nets_training import params
 
@@ -28,18 +27,21 @@ def get_cifar10_dataset(dirpath="./data/CIFAR10"):
         CIFAR10_MEAN, CIFAR10_STD_DEV
     )  # from https://opacus.ai/tutorials/building_image_classifier
 
-    train_transforms = transforms.Compose([
-        transforms.RandomCrop(32, padding=4, padding_mode='reflect'),
-        transforms.RandomHorizontalFlip(),
+    train_transforms = torchvision.transforms.Compose([
+        torchvision.transforms.RandomCrop(32,
+                                          padding=4,
+                                          padding_mode='reflect'),
+        torchvision.transforms.RandomHorizontalFlip(),
         #transforms.Resize(image_size),
-        transforms.ToTensor(),
-        transforms.Normalize(*cifar_stats, inplace=True)
+        torchvision.transforms.ToTensor(),
+        torchvision.transforms.Normalize(*cifar_stats, inplace=True)
         #transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
 
-    valid_transforms = transforms.Compose(
-        [transforms.ToTensor(),
-         transforms.Normalize(*cifar_stats)])
+    valid_transforms = torchvision.transforms.Compose([
+        torchvision.transforms.ToTensor(),
+        torchvision.transforms.Normalize(*cifar_stats)
+    ])
 
     trainset = torchvision.datasets.CIFAR10(root=dirpath,
                                             train=True,
@@ -115,9 +117,9 @@ def get_mnist_dataset(dirpath="./data/MNIST"):
     Returns:
         tuple : (trainset, testset)
     """
-    transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize((0.5, ), (0.5, ), inplace=True),
+    transform = torchvision.transforms.Compose([
+        torchvision.transforms.ToTensor(),
+        torchvision.transforms.Normalize((0.5, ), (0.5, ), inplace=True),
     ])
 
     trainset = torchvision.datasets.MNIST(dirpath,
