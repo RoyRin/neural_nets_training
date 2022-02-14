@@ -341,18 +341,19 @@ def train_model(
                 )
         # print the final epoch
         epoch_end(result=history[-1])
+        return history
 
     # train with DP
     if eps is None:
         # train without DP
-        _train(train_loader)
+        ret["history"] = _train(train_loader)
     else:
         with BatchMemoryManager(
                 data_loader=train_loader,
                 max_physical_batch_size=MAX_PHYSICAL_BATCH_SIZE,
                 optimizer=optimizer) as new_data_loader:
             print(f"new data loader created {type(new_data_loader)}")
-            _train(new_data_loader)
+            ret["history"] = _train(new_data_loader)
 
     if save_path is not None:
         utils.save_model(model, save_path)
