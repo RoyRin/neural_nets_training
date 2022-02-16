@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "neural_nets_training"
-version = "0.1.0"
+version = "0.2.0"
 description = ""
 authors = ["Roy Rinberg <royrinberg@gmail.com>"]
 
