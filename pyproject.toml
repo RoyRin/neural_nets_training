@@ -20,7 +20,6 @@ click = "^8.0.3"
 
 [tool.poetry.dev-dependencies]
 
-syft = "^0.6.0" # needed for PATE only
 
 ipykernel = "^6.6.0"
 bpython = "^0.21"
