@@ -219,7 +219,7 @@ class ResNet(nn.Module):
 
 
 def Resnet50_model_factory(*,
-                           num_classes=10,
+                           num_classes=100,
                            device=params.get_default_device()):
     """ return a ResNet 50 object
     """
