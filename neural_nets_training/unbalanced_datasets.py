@@ -1,4 +1,5 @@
 # from pytorch tutorial: https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html
+from matplotlib.pyplot import get
 import numpy as np
 import torch
 from torch.utils.data import Subset
@@ -26,6 +27,16 @@ def bubble_step(array, steps=3):
     return array
 
 
+def get_class_to_indices(dataset):
+    """ returns a dictionary mapping class-id to a list of indices to only data from that class"""
+    classes = np.arange(len(dataset.classes))
+    class_to_dataset = {
+        class_id: (dataset.targets == class_id).nonzero().T[0]
+        for class_id in classes
+    }
+    return class_to_dataset
+
+
 def get_class_to_dataset(dataset):
     """ returns a dictionary mapping class-id to a dataset of only data from that class"""
     classes = np.arange(len(dataset.classes))
@@ -39,14 +50,16 @@ def get_class_to_dataset(dataset):
 
 def zipf_dist(max_val, min_val, steps):
     range_ = max_val - min_val
-    return [(range_ / (x + 1)) + min_val for x in range(steps)]
+    return [int((range_ / (x + 1)) + min_val) for x in range(steps)]
 
 
-def get_class_distribution_counts(N, class_size, class_count=10):
+def get_zipf_class_distribution_counts(N, min_class_size, class_count=10):
     """ returns the number of points from each class accoridng to a from zipf_distibution
+
+    returns list of ints (length = number of classes)
     """
-    percent = int(class_size / 100)
-    class_distribution_counts = zipf_dist(int(class_size), 40 * percent,
+    percent = int(min_class_size / 100)
+    class_distribution_counts = zipf_dist(int(min_class_size), 40 * percent,
                                           class_count)
     # the amount of data from each class in the ranking
     return class_distribution_counts
@@ -54,19 +67,25 @@ def get_class_distribution_counts(N, class_size, class_count=10):
 
 
 # Create a dictionary that has a dataset containing each class
-def get_class_distribution_counts_from_dataset(dataset):
+def get_zipf_class_distribution_counts_from_dataset(dataset):
+    """ returns the number of points from each class accoridng to a from zipf_distibution
+    
+        returns list of ints (length = number of classes)
+    """
+
     N = len(dataset)
+    # get the smallest class size
     min_class_size = min((sum(np.array(dataset.targets) == i)
                           for i in range(len(dataset.classes))))  #
-    return get_class_distribution_counts(N,
-                                         class_size=min_class_size,
-                                         class_count=len(dataset.classes))
+    return get_zipf_class_distribution_counts(N,
+                                              min_class_size=min_class_size,
+                                              class_count=len(dataset.classes))
 
 
-def get_weighted_indices(class_ordering, class_distribution_counts,
+def get_weighted_indices(*, class_ordering, class_distribution_counts,
                          class_to_dataset):
     """
-    class_ordering : a list continaing numbers 0-9 (inclusive), in some order
+    class_ordering : a list containing numbers 0-9 (inclusive), in some order
     distribution_counts : a list denoting the number of points to sample from a particular class
     class_to_dataset : a dictionary mapping class-id to a dataset of only data from that class
 
@@ -85,6 +104,38 @@ def get_weighted_indices(class_ordering, class_distribution_counts,
                                              size=number_of_points_from_class,
                                              replace=False)
     return indices
+
+
+def generate_zipf_mask(dataset):
+    """
+    Generate a mask that is a zipf distribution
+    # Note - this sort of re-implements get_weighted_indices, but I currently don't fully trust get_weighted_indices
+
+    """
+    N = len(dataset)
+    class_count = len(dataset.classes)
+    # returns a dictionary mapping class-id to indices of only data from that class
+    class_to_indices = get_class_to_indices(dataset)
+
+    class_distribution_counts = get_zipf_class_distribution_counts_from_dataset(
+        dataset)  # returns a list of ints (length = number of classes)
+
+    weighted_indices = []
+    for class_ind in range(class_count):
+        # get the indices of the data points from a particular class
+        class_indices = class_to_indices[class_ind]
+        # randomly pick a subset of the data points of a particular class
+        weighted_indices.extend(
+            np.random.choice(class_indices,
+                             size=class_distribution_counts[class_ind],
+                             replace=False))
+    print("concatenating mask")
+    # construct a boolean mask for all the indices
+    print(len(weighted_indices))
+    mask = np.zeros(N, dtype=bool)
+    mask[weighted_indices] = True
+    #mask = np.array([i in set(weighted_indices) for i in range(N)])
+    return mask
 
 
 def get_IID_datasets(dataset, num_teachers):

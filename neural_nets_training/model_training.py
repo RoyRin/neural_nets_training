@@ -251,7 +251,8 @@ def train_model(
                     "model_name": model_name
                 }
     """
-    torch.cuda.empty_cache()
+    if device == torch.device("cuda"):
+        torch.cuda.empty_cache()
     # set up
     first_start = datetime.datetime.now()
 

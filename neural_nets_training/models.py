@@ -24,6 +24,7 @@ TODO:
 
 
 class ResNet9(nn.Module):
+    """ Resnet 9 """
     def __init__(self, in_channels, num_classes):
         super().__init__()
         self.basemodel_name = "ResNet9"
@@ -52,6 +53,7 @@ class ResNet9(nn.Module):
 
 
 class FCN(nn.Module):
+    """ 2 layer fully connected network """
     def __init__(self, num_classes=10, input_pixels=28 * 28):
         super(FCN, self).__init__()
         self.basemodel_name = "FCN"
@@ -66,6 +68,8 @@ class FCN(nn.Module):
 
 
 class memorization_FCN(nn.Module):
+    """ 2 layer fully connected network  which was used in memorization paper 
+    https://github.com/google-research/heldout-influence-estimation/blob/master/mnist-example/mnist_infl_mem.py  """
     def __init__(self, num_classes=10, input_pixels=28 * 28):
         """
         NN attempting to mimic Jax implementation - 
@@ -218,6 +222,34 @@ class ResNet(nn.Module):
         return output
 
 
+def parameters_per_model(model):
+    return sum([np.prod(i.shape) for i in model.parameters()])
+
+
+def CNN_model_factory(*, num_classes=10, device=params.get_default_device()):
+    """Helper, returns a CNN model"""
+    model = CNN(num_classes=num_classes)
+    model.to(device)
+    return model
+
+
+def FCN_model_factory(*, num_classes=10, device=params.get_default_device()):
+    """Helper, returns a FCN model"""
+    model = FCN(num_classes=num_classes)
+    model.to(device)
+    return model
+
+
+def Resnet9_model_factory(*,
+                          in_channels=3,
+                          num_classes=10,
+                          device=params.get_default_device()):
+    """Helper, returns a ResNet9 model"""
+    model = ResNet9(in_channels=in_channels, num_classes=num_classes)
+    model.to(device)
+    return model
+
+
 def Resnet50_model_factory(*,
                            num_classes=100,
                            device=params.get_default_device()):
@@ -244,33 +276,5 @@ def Resnet152_model_factory(*,
     """ return a ResNet 152 object
     """
     model = ResNet(BottleNeck, [3, 8, 36, 3], num_classes=num_classes)
-    model.to(device)
-    return model
-
-
-def parameters_per_model(model):
-    return sum([np.prod(i.shape) for i in model.parameters()])
-
-
-def CNN_model_factory(*, num_classes=10, device=params.get_default_device()):
-    """Helper, returns a CNN model"""
-    model = CNN(num_classes=num_classes)
-    model.to(device)
-    return model
-
-
-def FCN_model_factory(*, num_classes=10, device=params.get_default_device()):
-    """Helper, returns a FCN model"""
-    model = FCN(num_classes=num_classes)
-    model.to(device)
-    return model
-
-
-def Resnet9_model_factory(*,
-                          in_channels=3,
-                          num_classes=10,
-                          device=params.get_default_device()):
-    """Helper, returns a ResNet9 model"""
-    model = ResNet9(in_channels=in_channels, num_classes=num_classes)
     model.to(device)
     return model

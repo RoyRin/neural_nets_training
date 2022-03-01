@@ -191,3 +191,16 @@ def get_uneven_data_loaders(dataset, lengths):
     ]
 
     return torch.utils.data.random_split(dataset, lengths)
+
+
+def get_dataset_by_name(dataset_name="mnist"):
+    """ Get a dataset (tuple) by name (mnist, cifar10, cifar100)
+    """
+    if dataset_name.lower() == "mnist":
+        return get_mnist_dataset()
+    elif dataset_name.lower() == "cifar10":
+        return get_cifar10_dataset()
+    elif dataset_name.lower() == "cifar100":
+        return get_cifar100_dataset()
+
+    raise Exception(f"Do not know name : {dataset_name}")
