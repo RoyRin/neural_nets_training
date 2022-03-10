@@ -37,17 +37,95 @@ def get_num_correct(outputs, targets):
 
 
 def compute_accuracy(outputs, targets):
+    """return accuracy of the model, given targets """
     return get_num_correct(outputs, targets) / len(targets)
 
 
-def validation_step(*, model, batch, criterion, device):
+def prediction_by_imgs(*,
+                       model,
+                       imgs,
+                       device=params.get_default_device(),
+                       verbose=False):
+    """
+    returns confidence, prediction
+    """
+    # beep boop baap - i dont know about this
+    imgs = utils.to_device(imgs, device)
+    # if using individual img, use `img.unsqueeze_(0)`
+    with torch.no_grad():
+        yb = model(imgs)
+    softmax = torch.nn.functional.softmax(
+        yb, dim=1)  # for individual img, use yb[0]
+    confs, preds = torch.max(softmax, dim=1)
+    return confs, preds
+
+
+def prediction_from_logits(logits):
+    """ Similar to prediction by imgs, but with logits """
+    softmax = torch.nn.functional.softmax(logits, dim=1)
+    confs, preds = torch.max(softmax, dim=1)
+    return confs, preds
+
+
+@torch.no_grad()
+def compute_probability_of_correct_labels(*, model, data_loader, device):
+    """ Computes the probability the model correctly labels a point on the training set
+    
+    Args:
+        model ([type]): [description]
+        data_loader ([type]): [description]
+        device ([type]): [description]
+
+    Returns:
+        confidences [np.array], accuracy
+            accuracy [float from 0 to 1]
+            confidences [np.array of floats from 0 to 1]
+    """
+    total = correct = 0
+    N = len(data_loader.dataset)
+    confidences = np.zeros(N)
+
+    for ind, (data, targets) in enumerate(data_loader):
+        data, targets = data.to(device), targets.to(device)
+        output = model(data)  # make prediction
+        softmax = torch.nn.functional.softmax(output, dim=0)
+        w = len(targets)
+        confs = softmax[np.arange(len(softmax)), targets]
+        confidences[w * ind:w * (ind + 1)] = utils.to_device(confs, "cpu")
+
+        _, pred = torch.max(output, 1)
+        total += targets.size(0)
+        correct += (pred == targets).sum().item()
+    return confidences, correct / total
+
+
+def validation_step(*, model, batch, criterion, device, class_count=10):
+    """validation step - evaluate model on a batch
+
+    Args:
+        model (_type_): _description_
+        batch (_type_): _description_
+        criterion (_type_): _description_
+        device (_type_): _description_
+
+    Returns:
+        dict of stats: {loss, num_correct, num}
+    """
     images, labels = batch
     images = images.to(device)
     labels = labels.to(device)
     out = model(images)  # Generate predictions
     loss = criterion(out, labels).detach().item()  # Calculate loss
     num_correct = get_num_correct(out, labels)
-    return {'loss': loss, 'num_correct': num_correct, "num": len(labels)}
+    _, predictions = prediction_from_logits(logits=out.cpu())
+    histogram = np.histogram(predictions, np.arange(class_count + 1))[0]
+
+    return {
+        'loss': loss,
+        'num_correct': num_correct,
+        "num": len(labels),
+        "histogram": histogram
+    }
 
 
 def compute_epoch_accuracy(outputs):
@@ -62,17 +140,36 @@ def compute_epoch_accuracy(outputs):
 
     num_correct = sum([x['num_correct'] for x in outputs])
     total_count = sum([x['num'] for x in outputs])
-    return {'loss': epoch_loss, 'accuracy': num_correct / total_count}
+
+    histograms = sum([x.get("histogram") for x in outputs])
+
+    return {
+        'loss': epoch_loss,
+        'accuracy': num_correct / total_count,
+        "histograms": histograms
+    }
 
 
 @torch.no_grad()
-def evaluate(*, model, data_loader, criterion, device):
+def evaluate(*, model, data_loader, criterion, device, class_count=10):
+    """evaluate a model on a dataloader
+
+    Args:
+        model (_type_): _description_
+        data_loader (_type_): _description_
+        criterion (_type_): _description_
+        device (_type_): _description_
+
+    Returns:
+        list of dicts: 
+    """
     model.eval()
     outputs = [
         validation_step(model=model,
                         batch=batch,
                         criterion=criterion,
-                        device=device) for batch in data_loader
+                        device=device,
+                        class_count=class_count) for batch in data_loader
     ]
     return compute_epoch_accuracy(outputs)
 
@@ -109,64 +206,12 @@ def get_predictions(*, model, data_loader, device, optimizer=None):
     return predictions, correct / total
 
 
-@torch.no_grad()
-def compute_probability_of_correct_labels(*, model, data_loader, device):
-    """ Computes the probability the model correctly labels a point on the training set
-    
-    Args:
-        model ([type]): [description]
-        data_loader ([type]): [description]
-        device ([type]): [description]
-
-    Returns:
-        confidences [np.array], accuracy
-            accuracy [float from 0 to 1]
-            confidences [np.array of floats from 0 to 1]
-    """
-    total = correct = 0
-    N = len(data_loader.dataset)
-    confidences = np.zeros(N)
-
-    for ind, (data, targets) in enumerate(data_loader):
-        data, targets = data.to(device), targets.to(device)
-        output = model(data)  # make prediction
-        softmax = torch.nn.functional.softmax(output, dim=0)
-        w = len(targets)
-        confs = softmax[np.arange(len(softmax)), targets]
-        confidences[w * ind:w * (ind + 1)] = utils.to_device(confs, "cpu")
-
-        _, pred = torch.max(output, 1)
-        total += targets.size(0)
-        correct += (pred == targets).sum().item()
-    return confidences, correct / total
-
-
 def select_n_random(data, dataset, labels, n=100):
     ''' Selects n random datapoints and their corresponding labels from a dataset '''
     assert len(data) == len(labels)
     perm = torch.randperm(len(data))
     rand_labels = [dataset.targets[i] for i in perm][:n]
     return data[perm][:n], rand_labels
-
-
-def prediction_by_imgs(*,
-                       model,
-                       imgs,
-                       device=params.get_default_device(),
-                       verbose=False):
-    """
-    returns confidence, prediction
-    """
-    # beep boop baap - i dont know about this
-    imgs = utils.to_device(imgs, device)
-    # if using individual img, use `img.unsqueeze_(0)`
-    with torch.no_grad():
-        yb = model(imgs)
-    softmax = torch.nn.functional.softmax(
-        yb, dim=1)  # for individual img, use yb[0]
-    confs, preds = torch.max(softmax, dim=1)
-    #_, pred = torch.max(yb, dim=1)
-    return confs, preds
 
 
 def train_single_epoch(*,
@@ -385,10 +430,12 @@ def eval_validation_callback(*, result, model, test_loader, criterion, device,
     """ Evaluate model on validation set 
         update result inline
     """
+    class_count = len(test_loader.dataset.classes)
     val_result = evaluate(model=model,
                           data_loader=test_loader,
                           criterion=criterion,
-                          device=device)
+                          device=device,
+                          class_count=class_count)
 
     result.update({"val_" + k: v for k, v in val_result.items()})
 
@@ -398,10 +445,12 @@ def eval_training_callback(*, result, model, train_loader, criterion, device,
     """ Evaluate model on training set 
         update result inline
     """
+    class_count = len(train_loader.dataset.classes)
     train_result = evaluate(model=model,
                             data_loader=train_loader,
                             criterion=criterion,
-                            device=device)
+                            device=device,
+                            class_count=class_count)
     result.update({"train_" + k: v for k, v in train_result.items()})
 
 
