@@ -123,6 +123,27 @@ class CNN(nn.Module):
         # yapf: enable
 
 
+class cifar10_CNN(nn.Module):
+    def __init__(self, num_classes=10):
+        super(cifar10_CNN, self).__init__()
+        self.basemodel_name = "cifar10_CNN"
+        self.conv1 = nn.Conv2d(3, 6, 5)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.conv2 = nn.Conv2d(6, 16, 5)
+        self.fc1 = nn.Linear(16 * 5 * 5, 120)
+        self.fc2 = nn.Linear(120, 84)
+        self.fc3 = nn.Linear(84, num_classes)
+
+    def forward(self, x):
+        x = self.pool(F.relu(self.conv1(x)))
+        x = self.pool(F.relu(self.conv2(x)))
+        x = x.view(-1, 16 * 5 * 5)
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        return x
+
+
 # code taken from https://github.com/weiaicunzai/pytorch-cifar100/blob/master/models/resnet.py
 class BottleNeck(nn.Module):
     """Residual block for resnet over 50 layers"""
@@ -230,6 +251,15 @@ def CNN_model_factory(*, num_classes=10, device=params.get_default_device()):
     """Helper, returns a CNN model"""
     model = CNN(num_classes=num_classes)
     model.to(device)
+    return model
+
+
+def cifar10_CNN_model_factory(*,
+                              num_classes=10,
+                              device=params.get_default_device()):
+    """Helper, returns a cifar_CNN model"""
+    model = cifar10_CNN(num_classes=num_classes)
+    model = model.to(device)
     return model
 
 
