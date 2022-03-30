@@ -31,7 +31,7 @@ def get_class_to_indices(dataset):
     """ returns a dictionary mapping class-id to a list of indices to only data from that class"""
     classes = np.arange(len(dataset.classes))
     class_to_dataset = {
-        class_id: (dataset.targets == class_id).nonzero().T[0]
+        class_id: (np.array(dataset.targets) == class_id).nonzero()[0].T
         for class_id in classes
     }
     return class_to_dataset
@@ -49,36 +49,38 @@ def get_class_to_dataset(dataset):
 
 
 def zipf_dist(max_val, min_val, steps):
+    """ returns a list of ints, where each int is a number of points from a class for a ZIPF distribution"""
     range_ = max_val - min_val
-    return [int((range_ / (x + 1)) + min_val) for x in range(steps)]
+    return [int((range_ / (2**x)) + min_val) for x in range(steps)]
 
 
-def get_zipf_class_distribution_counts(N, min_class_size, class_count=10):
-    """ returns the number of points from each class accoridng to a from zipf_distibution
-
-    returns list of ints (length = number of classes)
+def get_zipf_class_distribution_counts(class_size,
+                                       min_percentage=40,
+                                       class_count=10):
+    """ returns the number of points from each class according to a from zipf_distibution
     """
-    percent = int(min_class_size / 100)
-    class_distribution_counts = zipf_dist(int(min_class_size), 40 * percent,
+    percent = int(class_size / 100)
+    class_distribution_counts = zipf_dist(int(class_size),
+                                          min_percentage * percent,
                                           class_count)
     # the amount of data from each class in the ranking
     return class_distribution_counts
-    #class_distribution_counts = [percent*100, percent *80 , percent * 70, percent * 65, percent * 55,percent * 50, percent * 45, percent * 40, percent * 37, percent * 35]
 
 
 # Create a dictionary that has a dataset containing each class
-def get_zipf_class_distribution_counts_from_dataset(dataset):
+def get_zipf_class_distribution_counts_from_dataset(dataset,
+                                                    min_percentage=40):
     """ returns the number of points from each class accoridng to a from zipf_distibution
     
         returns list of ints (length = number of classes)
     """
 
-    N = len(dataset)
     # get the smallest class size
     min_class_size = min((sum(np.array(dataset.targets) == i)
-                          for i in range(len(dataset.classes))))  #
-    return get_zipf_class_distribution_counts(N,
-                                              min_class_size=min_class_size,
+                          for i in range(len(dataset.classes))))
+
+    return get_zipf_class_distribution_counts(class_size=min_class_size,
+                                              min_percentage=min_percentage,
                                               class_count=len(dataset.classes))
 
 
@@ -106,7 +108,7 @@ def get_weighted_indices(*, class_ordering, class_distribution_counts,
     return indices
 
 
-def generate_zipf_mask(dataset):
+def generate_zipf_mask(dataset, min_percentage=40):
     """
     Generate a mask that is a zipf distribution
     # Note - this sort of re-implements get_weighted_indices, but I currently don't fully trust get_weighted_indices
@@ -116,9 +118,9 @@ def generate_zipf_mask(dataset):
     class_count = len(dataset.classes)
     # returns a dictionary mapping class-id to indices of only data from that class
     class_to_indices = get_class_to_indices(dataset)
-
+    # returns [ints]
     class_distribution_counts = get_zipf_class_distribution_counts_from_dataset(
-        dataset)  # returns a list of ints (length = number of classes)
+        dataset, min_percentage=min_percentage)
 
     weighted_indices = []
     for class_ind in range(class_count):
@@ -134,7 +136,6 @@ def generate_zipf_mask(dataset):
     print(len(weighted_indices))
     mask = np.zeros(N, dtype=bool)
     mask[weighted_indices] = True
-    #mask = np.array([i in set(weighted_indices) for i in range(N)])
     return mask
 
 

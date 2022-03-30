@@ -440,6 +440,14 @@ def eval_validation_callback(*, result, model, test_loader, criterion, device,
     result.update({"val_" + k: v for k, v in val_result.items()})
 
 
+def compute_probability_of_correct_labels_callback(*, model, train_loader,
+                                                   result, device, **kwargs):
+    """ Computes the probability the model correctly labels a point on the training set"""
+    confidences, acc = compute_probability_of_correct_labels(
+        model=model, data_loader=train_loader, device=device)
+    result.update({"train_confidences": confidences})
+
+
 def eval_training_callback(*, result, model, train_loader, criterion, device,
                            **kwargs):
     """ Evaluate model on training set 
