@@ -108,7 +108,7 @@ def get_weighted_indices(*, class_ordering, class_distribution_counts,
     return indices
 
 
-def generate_zipf_mask(dataset, min_percentage=40):
+def generate_zipf_mask(dataset, min_percentage=40, reversed_zipf = False):
     """
     Generate a mask that is a zipf distribution
     # Note - this sort of re-implements get_weighted_indices, but I currently don't fully trust get_weighted_indices
@@ -123,7 +123,10 @@ def generate_zipf_mask(dataset, min_percentage=40):
         dataset, min_percentage=min_percentage)
 
     weighted_indices = []
-    for class_ind in range(class_count):
+    class_ordering = range(class_count)
+    if reversed_zipf:
+        class_ordering = reversed(class_ordering)
+    for class_ind in class_ordering:
         # get the indices of the data points from a particular class
         class_indices = class_to_indices[class_ind]
         # randomly pick a subset of the data points of a particular class

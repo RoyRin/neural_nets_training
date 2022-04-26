@@ -5,7 +5,6 @@ import datetime
 import torch
 from torch.utils.tensorboard import SummaryWriter
 from opacus.utils.batch_memory_manager import BatchMemoryManager
-from opacus.validators import ModuleValidator
 
 from neural_nets_training import privacy
 from neural_nets_training import utils

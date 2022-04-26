@@ -247,8 +247,13 @@ def parameters_per_model(model):
     return sum([np.prod(i.shape) for i in model.parameters()])
 
 
-def CNN_model_factory(*, num_classes=10, device=params.get_default_device()):
+def CNN_model_factory(*,
+                      num_classes=10,
+                      device=params.get_default_device(),
+                      seed=None):
     """Helper, returns a CNN model"""
+    if seed is not None:
+        torch.manual_seed(seed)
     model = CNN(num_classes=num_classes)
     model.to(device)
     return model
@@ -256,15 +261,23 @@ def CNN_model_factory(*, num_classes=10, device=params.get_default_device()):
 
 def cifar10_CNN_model_factory(*,
                               num_classes=10,
-                              device=params.get_default_device()):
+                              device=params.get_default_device(),
+                              seed=None):
     """Helper, returns a cifar_CNN model"""
+    if seed is not None:
+        torch.manual_seed(seed)
     model = cifar10_CNN(num_classes=num_classes)
     model = model.to(device)
     return model
 
 
-def FCN_model_factory(*, num_classes=10, device=params.get_default_device()):
+def FCN_model_factory(*,
+                      num_classes=10,
+                      device=params.get_default_device(),
+                      seed=None):
     """Helper, returns a FCN model"""
+    if seed is not None:
+        torch.manual_seed(seed)
     model = FCN(num_classes=num_classes)
     model.to(device)
     return model
@@ -273,8 +286,11 @@ def FCN_model_factory(*, num_classes=10, device=params.get_default_device()):
 def Resnet9_model_factory(*,
                           in_channels=3,
                           num_classes=10,
-                          device=params.get_default_device()):
+                          device=params.get_default_device(),
+                          seed=None):
     """Helper, returns a ResNet9 model"""
+    if seed is not None:
+        torch.manual_seed(seed)
     model = ResNet9(in_channels=in_channels, num_classes=num_classes)
     model.to(device)
     return model
@@ -282,9 +298,12 @@ def Resnet9_model_factory(*,
 
 def Resnet50_model_factory(*,
                            num_classes=100,
-                           device=params.get_default_device()):
+                           device=params.get_default_device(),
+                           seed=None):
     """ return a ResNet 50 object
     """
+    if seed is not None:
+        torch.manual_seed(seed)
     model = ResNet(BottleNeck, [3, 4, 6, 3], num_classes=num_classes)
     model.to(device)
     return model
@@ -292,9 +311,11 @@ def Resnet50_model_factory(*,
 
 def Resnet101_model_factory(*,
                             num_classes=10,
-                            device=params.get_default_device()):
-    """ return a ResNet 101 object
-    """
+                            device=params.get_default_device(),
+                            seed=None):
+    """ return a ResNet 101 object """
+    if seed is not None:
+        torch.manual_seed(seed)
     model = ResNet(BottleNeck, [3, 4, 23, 3], num_classes=num_classes)
     model.to(device)
     return model
@@ -302,9 +323,11 @@ def Resnet101_model_factory(*,
 
 def Resnet152_model_factory(*,
                             num_classes=10,
-                            device=params.get_default_device()):
-    """ return a ResNet 152 object
-    """
+                            device=params.get_default_device(),
+                            seed=None):
+    """ return a ResNet 152 object """
+    if seed is not None:
+        torch.manual_seed(seed)
     model = ResNet(BottleNeck, [3, 8, 36, 3], num_classes=num_classes)
     model.to(device)
     return model

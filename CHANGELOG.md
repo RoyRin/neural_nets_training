@@ -1,5 +1,8 @@
 ## Changelog
 
+### 0.3.1
+* add a seed to model_training
+
 ### 0.3.0
 * general improvements
 

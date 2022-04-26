@@ -81,11 +81,11 @@ def get_cifar100_dataset(dirpath="./data/CIFAR100", transforms=None):
             torchvision.transforms.ToTensor(),
             torchvision.transforms.Normalize((0.5, ), (0.5, ), inplace=True),
         ])
-    cifar100_train = torchvision.datasets.CIFAR100("./data/cifar100",
+    cifar100_train = torchvision.datasets.CIFAR100(dirpath,
                                                    train=True,
                                                    download=True,
                                                    transform=transforms)
-    cifar100_test = torchvision.datasets.CIFAR100("./data/cifar100",
+    cifar100_test = torchvision.datasets.CIFAR100(dirpath,
                                                   train=False,
                                                   download=True,
                                                   transform=transforms)
@@ -197,10 +197,25 @@ def get_dataset_by_name(dataset_name="mnist"):
     """ Get a dataset (tuple) by name (mnist, cifar10, cifar100)
     """
     if dataset_name.lower() == "mnist":
+        print("Loading MNIST dataset")
         return get_mnist_dataset()
     elif dataset_name.lower() == "cifar10":
+        print("Loading CIFAR10 dataset")
         return get_cifar10_dataset()
     elif dataset_name.lower() == "cifar100":
+        print("Loading CIFAR100 dataset")
         return get_cifar100_dataset()
 
     raise Exception(f"Do not know name : {dataset_name}")
+
+
+def get_dataset_and_dataloader_by_name(dataset_name):
+    """ Get a dataset (tuple) by name (mnist, cifar10, cifar100)
+    return 
+        (trainset, testset), (trainloader, testloader)
+    """
+    trainset, testset = get_dataset_by_name(dataset_name)
+    trainloader, testloader = load_dataloader(
+        trainset, batch_size=params.batch_size), load_dataloader(
+            testset, batch_size=params.batch_size)
+    return (trainset, testset), (trainloader, testloader)
