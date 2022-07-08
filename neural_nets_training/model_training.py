@@ -212,7 +212,6 @@ def train_single_epoch(*,
                        model,
                        train_loader,
                        optimizer,
-                       learning_rate_scheduler=None,
                        criterion,
                        device,
                        batch_size=params.batch_size):

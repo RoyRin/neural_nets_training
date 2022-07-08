@@ -92,14 +92,16 @@ def grow_and_shrink_lr(optimizer, max_lr, total_epochs):
         http://vtaly.net/papers/FZ_Infl_mem.pdf
     """
     peak_epoch = int(total_epochs * .15)
+    start_factor = 1e-4
+
     scheduler = torch.optim.lr_scheduler.LinearLR(optimizer,
-                                                  start_factor=1e-4,
+                                                  start_factor=start_factor,
                                                   end_factor=max_lr,
                                                   total_iters=peak_epoch)
 
     scheduler_2 = torch.optim.lr_scheduler.LinearLR(optimizer,
                                                     start_factor=max_lr,
-                                                    end_factor=max_lr,
+                                                    end_factor=start_factor,
                                                     total_iters=total_epochs -
                                                     peak_epoch)
     schedulers = [scheduler, scheduler_2]
