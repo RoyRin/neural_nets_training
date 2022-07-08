@@ -108,10 +108,23 @@ def grow_and_shrink_lr(optimizer, max_lr, total_epochs):
     return torch.optim.lr_scheduler.ChainedScheduler(schedulers)
 
 
-def get_new_optimizer(model, max_lr=1e-2, weight_decay=1e-4):
-    optimizer_type = torch.optim.Adam
+def get_new_optimizer(*,
+                      model,
+                      max_lr=1e-2,
+                      adam=False,
+                      momentum=0.9,
+                      weight_decay=1e-4):
 
+    if adam:
+        optimizer_type = torch.optim.Adam
+
+        return optimizer_type(model.parameters(),
+                              lr=max_lr,
+                              weight_decay=weight_decay)
+
+    optimizer_type = torch.optim.SGD
     return optimizer_type(model.parameters(),
+                          momentum=momentum,
                           lr=max_lr,
                           weight_decay=weight_decay)
 

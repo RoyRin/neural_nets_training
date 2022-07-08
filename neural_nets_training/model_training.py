@@ -337,7 +337,8 @@ def train_model(
 
     model = model.to(device)
     optimizer = optimizer or utils.get_new_optimizer(
-        model, max_lr=max_lr)  # take existing optimizer if provided
+        adam=False, momentum=0.9, weight_decay=0.9, model=model,
+        max_lr=max_lr)  # take existing optimizer if provided
 
     learning_rate_scheduler = None
 
