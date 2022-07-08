@@ -269,6 +269,7 @@ def train_model(
         tensorboard_path=None,
         criterion,
         max_lr=.5,
+        adam=True,  # Adam optimizer, if false, use SGD
         schedule_lr=True,
         eps=None,
         delta=None,
@@ -338,7 +339,7 @@ def train_model(
 
     model = model.to(device)
     optimizer = optimizer or utils.get_new_optimizer(
-        adam=(not schedule_lr),  # if you schedule, you don't want to use adam
+        adam=adam,  # if you schedule, you don't want to use adam
         momentum=0.9,
         weight_decay=0.9,
         model=model,
