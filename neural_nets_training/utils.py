@@ -85,9 +85,30 @@ def plot_histogram(dataloader):
     plt.show()
 
 
+def grow_and_shrink_lr(optimizer, max_lr, total_epochs):
+    """
+    grows to max_lr, linearly in the first 15% of epochs,
+    then shrinks linear to 0 in the remaining (as done in feldman)
+        http://vtaly.net/papers/FZ_Infl_mem.pdf
+    """
+    peak_epoch = int(total_epochs * .15)
+    scheduler = torch.optim.lr_scheduler.LinearLR(optimizer,
+                                                  start_factor=1e-4,
+                                                  end_factor=max_lr,
+                                                  total_iters=peak_epoch)
+
+    scheduler_2 = torch.optim.lr_scheduler.LinearLR(optimizer,
+                                                    start_factor=max_lr,
+                                                    end_factor=max_lr,
+                                                    total_iters=total_epochs -
+                                                    peak_epoch)
+    schedulers = [scheduler, scheduler_2]
+    return torch.optim.lr_scheduler.ChainedScheduler(schedulers)
+
+
 def get_new_optimizer(model, max_lr=1e-2, weight_decay=1e-4):
     optimizer_type = torch.optim.Adam
-    optimizer_type = torch.optim.RMSprop
+
     return optimizer_type(model.parameters(),
                           lr=max_lr,
                           weight_decay=weight_decay)

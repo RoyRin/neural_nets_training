@@ -40,15 +40,10 @@ def compute_accuracy(outputs, targets):
     return get_num_correct(outputs, targets) / len(targets)
 
 
-def prediction_by_imgs(*,
-                       model,
-                       imgs,
-                       device=params.get_default_device(),
-                       verbose=False):
+def prediction_by_imgs(*, model, imgs, device=params.get_default_device()):
     """
     returns confidence, prediction
     """
-    # beep boop baap - i dont know about this
     imgs = utils.to_device(imgs, device)
     # if using individual img, use `img.unsqueeze_(0)`
     with torch.no_grad():
@@ -205,9 +200,9 @@ def get_predictions(*, model, data_loader, device, optimizer=None):
     return predictions, correct / total
 
 
-def select_n_random(data, dataset, labels, n=100):
+def select_n_random(dataset, n=100):
     ''' Selects n random datapoints and their corresponding labels from a dataset '''
-    assert len(data) == len(labels)
+    data = dataset.data
     perm = torch.randperm(len(data))
     rand_labels = [dataset.targets[i] for i in perm][:n]
     return data[perm][:n], rand_labels
@@ -217,6 +212,7 @@ def train_single_epoch(*,
                        model,
                        train_loader,
                        optimizer,
+                       learning_rate_scheduler=None,
                        criterion,
                        device,
                        batch_size=params.batch_size):
@@ -250,7 +246,6 @@ def train_single_epoch(*,
         loss = criterion(output, targets)
         loss.backward()
         optimizer.step()
-
         # get stats
         correct = get_num_correct(output, targets)
         estimated_total_correct += correct
@@ -274,6 +269,8 @@ def train_model(
         max_grad_norm=params.MAX_GRAD_NORM,
         tensorboard_path=None,
         criterion,
+        max_lr=.5,
+        schedule_lr=True,
         eps=None,
         delta=None,
         per_epoch_callbacks=None,
@@ -341,7 +338,14 @@ def train_model(
 
     model = model.to(device)
     optimizer = optimizer or utils.get_new_optimizer(
-        model)  # take existing optimizer if provided
+        model, max_lr=max_lr)  # take existing optimizer if provided
+
+    learning_rate_scheduler = None
+
+    if schedule_lr:
+        learning_rate_scheduler = utils.grow_and_shrink_lr(optimizer=optimizer,
+                                                           max_lr=max_lr,
+                                                           total_epochs=epochs)
 
     # create writer
 
@@ -356,6 +360,10 @@ def train_model(
                 optimizer=optimizer,
                 criterion=criterion,
                 device=device)
+
+            # step through the learning rate scheduler if it exists
+            if learning_rate_scheduler is not None:
+                learning_rate_scheduler.step()
 
             result = {
                 "epoch":
@@ -475,7 +483,7 @@ def log_model_to_tensorboard(*, model, dataset, writer, n=32, **kwargs):
     """ log model information to tensorboard (things like model graph and features) """
     # log to tensorboard writer
     # select random images and their target indices
-    images, labels = select_n_random(dataset.data, dataset.targets, n=n)
+    images, labels = select_n_random(dataset=dataset, n=n)
     writer.add_graph(model, images)
 
 
