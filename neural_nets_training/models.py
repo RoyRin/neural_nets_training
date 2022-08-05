@@ -191,7 +191,7 @@ class ResNet(nn.Module):
     """ Large Resnet base class"""
     def __init__(self, block, num_block, num_classes=100):
         super().__init__()
-
+        self.basemodel_name = "ResNet"
         self.in_channels = 64
 
         self.conv1 = nn.Sequential(
