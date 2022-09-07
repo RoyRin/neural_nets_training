@@ -422,18 +422,18 @@ def train_model(
 
 
 ## Callbacks used in training
-"""All callbacks follow this pattern:
-    callback(model=model,
-                     epoch=epoch,
-                     train_loader=train_loader,
-                     test_loader=val_loader,
-                     optimizer=optimizer,
-                     criterion=criterion,
-                     result=result,
-                     writer=writer,
-                     device=device)
+# All callbacks follow this pattern:
+#     callback(model=model,
+#                      epoch=epoch,
+#                      train_loader=train_loader,
+#                      test_loader=val_loader,
+#                      optimizer=optimizer,
+#                      criterion=criterion,
+#                      result=result,
+#                      writer=writer,
+#                      device=device)
+# 
 
-"""
 
 
 def eval_validation_callback(*, result, model, test_loader, criterion, device,
